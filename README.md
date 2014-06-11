@@ -4,7 +4,7 @@ ctmg
 WORK IN PROGRESS
 20140611 laurent
 
-Encrypted container manager, wrapper for dm-crypt on loopback files
+Encrypted container manager, wrapper around cryptsetup on loopback files
 
 Usage: ctmg [ new | delete | open | close ] container_path [cmd_arguments]
     ctmg new	container_path container_size

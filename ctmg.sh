@@ -15,14 +15,15 @@
 # OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 CT_SUFFIX=".ct"
+CT_MAPPER_PREFIX="ct_"
 
 usage() {
 	cat <<-_EOF
 	Usage: $PROGRAM [ new | delete | open | close ] container_path [cmd_arguments]
-	    $PROGRAM new	container_path container_size
-	    $PROGRAM delete	container_path
-	    $PROGRAM open	container_path
-	    $PROGRAM close	container_path
+	    $PROGRAM new    container_path container_size (in MB)
+	    $PROGRAM delete container_path
+	    $PROGRAM open   container_path
+	    $PROGRAM close  container_path
 	_EOF
 }
 
@@ -54,12 +55,14 @@ yesno() {
 #
 
 do_new() {
-	trace dd if=/dev/zero of=$container_path bs=1 count=$container_size
+	trace dd if=/dev/zero of=$container_path bs=1M count=$container_size
 	trace sudo cryptsetup --cipher aes-xts-plain64 \
 		--key-size 512 --hash sha512 --iter-time 5000 \
 		--use-random --verify-passphrase \
 		luksFormat $container_path
+	do_open 0
 	trace sudo mkfs.ext4 $mapper_path
+	do_open 1
 }
 
 do_delete() {
@@ -67,12 +70,22 @@ do_delete() {
 }
 
 do_open() {
-	trace sudo cryptsetup luksOpen $container_path $mapper_name
-	mkdir $mount_path
-	mount /dev/mapper/$mapper_name $mount_path
+	do_mount=$1
+	if [ -f $mapper_path ]; then
+		echo "Mapper file $mapper_path already exists, not reopening"
+	else
+		trace sudo cryptsetup luksOpen $container_path $mapper_name
+	fi
+	if [ $do_mount -eq 1 ]; then
+		trace mkdir -p $mount_path
+		trace sudo mount /dev/mapper/$mapper_name $mount_path
+		trace sudo chown "$(id -u):$(id -g)" $mount_path # XXX optional
+	fi
 }
 
 do_close() {
+	trace sudo umount $mount_path && true
+	trace rmdir $mount_path
 	trace sudo cryptsetup luksClose $mapper_name
 }
 
@@ -87,7 +100,7 @@ cmd=$1
 container_dir="$(dirname $1)"						# /home/myuser/
 container_path="${container_dir}/$(basename $2 $CT_SUFFIX)${CT_SUFFIX}"	# /home/myuser/bla.ct
 mount_path="${container_dir}/$(basename $container_path ${CT_SUFFIX})"	# /home/myuser/bla/
-mapper_name="${CT_MAPPER_PREFIX}_$(basename $mount_path)"		# ct_bla
+mapper_name="${CT_MAPPER_PREFIX}$(basename $mount_path)"		# ct_bla
 mapper_path="/dev/mapper/${mapper_name}"				# /dev/mapper/ct_bla
 
 set -e
@@ -97,7 +110,8 @@ n|new)
 	[[ $# -ne 3 ]] && fatal_usage
 	container_size="$3"
 	do_new
-	echo "Created $container_path of size $container_size"
+	echo "Created $container_path of size ${container_size}MB"
+	echo "Open and mounted"
 	break;;
 d|del|delete)
 	[[ $# -ne 2 ]] && fatal_usage
@@ -109,13 +123,13 @@ d|del|delete)
 	break;;
 o|open)
 	[[ $# -ne 2 ]] && fatal_usage
-	do_open
-	echo "Mounted $mount_path"
+	do_open 1
+	echo "Opened and mounted $mount_path"
 	break;;
 c|close)
 	[[ $# -ne 2 ]] && fatal_usage
 	do_close
-	echo "Unmounted $mount_path"
+	echo "Closed and unmounted $mount_path"
 	break;;
 esac
 exit 0
