@@ -10,7 +10,7 @@ Encrypted container manager, wrapper around cryptsetup on loopback files
 
 ```bash
 ctmg [ new | delete | open | close ] container_path [cmd_arguments]
-    ctmg new	container_path container_size
+    ctmg new	container_path container_size (in MB)
     ctmg delete	container_path
     ctmg open	container_path
     ctmg close	container_path
@@ -23,9 +23,8 @@ ctmg [ new | delete | open | close ] container_path [cmd_arguments]
 Creating the container
 
 ```bash
-m$ ./ctmg.sh new example 100
-```
-```bash
+$ ctmg new example 100
+
 [-] dd if=/dev/zero of=./example.ct bs=1M count=100
 100+0 records in
 100+0 records out
@@ -64,9 +63,9 @@ Mapper file /dev/mapper/ct_example already exists, not reopening
 #### Adding a file in the encryted container, and closing it
 
 ```bash
-m$ echo "blabla" > example/my_encrypted_file.txt
+$ echo "blabla" > example/my_encrypted_file.txt
 
-m$ ./ctmg.sh close example
+$ ctmg close example
 [-] sudo umount ./example
 [-] rmdir ./example
 [-] sudo cryptsetup luksClose ct_example
@@ -76,7 +75,7 @@ m$ ./ctmg.sh close example
 #### Reopening the encrypted container
 
 ```bash
-m$ ./ctmg.sh open example
+$ ctmg open example
 [-] sudo cryptsetup luksOpen ./example.ct ct_example
 Enter passphrase for ./example.ct: 
 [-] mkdir -p ./example
@@ -84,6 +83,6 @@ Enter passphrase for ./example.ct:
 [-] sudo chown 1000:1000 ./example
 [*] Opened and mounted ./example
 
-m$ more example/my_encrypted_file.txt 
+$ more example/my_encrypted_file.txt 
 blabla
 ```
