@@ -71,7 +71,7 @@ do_delete() {
 
 do_open() {
 	do_mount=$1
-	if [ -f $mapper_path ]; then
+	if [ -e $mapper_path ]; then
 		echo "Mapper file $mapper_path already exists, not reopening"
 	else
 		trace sudo cryptsetup luksOpen $container_path $mapper_name
@@ -85,7 +85,7 @@ do_open() {
 
 do_close() {
 	trace sudo umount $mount_path && true
-	trace rmdir $mount_path
+	trace rmdir $mount_path && true
 	trace sudo cryptsetup luksClose $mapper_name
 }
 
@@ -110,8 +110,8 @@ n|new)
 	[[ $# -ne 3 ]] && fatal_usage
 	container_size="$3"
 	do_new
-	echo "Created $container_path of size ${container_size}MB"
-	echo "Open and mounted"
+	echo "[*] Created $container_path of size ${container_size}MB"
+	echo "[*] Open and mounted"
 	break;;
 d|del|delete)
 	[[ $# -ne 2 ]] && fatal_usage
@@ -119,17 +119,17 @@ d|del|delete)
 	yesno "Are you sure you would like to delete $container_path?"
 	do_close && true
 	do_delete
-	echo "Deleted $container_path"
+	echo "[*] Deleted $container_path"
 	break;;
 o|open)
 	[[ $# -ne 2 ]] && fatal_usage
 	do_open 1
-	echo "Opened and mounted $mount_path"
+	echo "[*] Opened and mounted $mount_path"
 	break;;
 c|close)
 	[[ $# -ne 2 ]] && fatal_usage
 	do_close
-	echo "Closed and unmounted $mount_path"
+	echo "[*] Closed and unmounted $mount_path"
 	break;;
 esac
 exit 0
