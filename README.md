@@ -1,9 +1,6 @@
 ctmg
 ====
 
-WORK IN PROGRESS
-20140611 laurent
-
 Encrypted container manager, wrapper around cryptsetup on loopback files
 
 ### Usage
@@ -18,7 +15,7 @@ ctmg [ new | delete | open | close ] container_path [cmd_arguments]
 
 ### Examples
 
-#### Creating a 100MB encrypted container called "example/"
+#### Creating a 100MB encrypted container called "example"
 
 Creating the container
 
@@ -60,7 +57,7 @@ Mapper file /dev/mapper/ct_example already exists, not reopening
 [*] Open and mounted
 ```
 
-#### Adding a file in the encryted container, and closing it
+#### Adding a file in the encryted container, and closing the container
 
 ```bash
 $ echo "blabla" > example/my_encrypted_file.txt
