@@ -17,7 +17,7 @@ ctmg [ new | delete | open | close ] container_path [cmd_arguments]
 
 #### Creating a 100MB encrypted container called "example"
 
-Will create "example.ct" in the current directory, and mount in in "example/".
+This is creating "example.ct" in the current directory, and mount it in "example/".
 
 ```bash
 $ ctmg new example 100
