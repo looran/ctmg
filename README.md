@@ -17,7 +17,7 @@ ctmg [ new | delete | open | close ] container_path [cmd_arguments]
 
 #### Creating a 100MB encrypted container called "example"
 
-Creating the container
+Will create "example.ct" in the current directory, and mount in in "example/".
 
 ```bash
 $ ctmg new example 100
@@ -59,6 +59,9 @@ Mapper file /dev/mapper/ct_example already exists, not reopening
 
 #### Adding a file in the encryted container, and closing the container
 
+We are creating "example/my_encrypted_file.txt", and closing the container.
+Closing the container leaves only "example.ct", the "example/" directory is umounted and removed.
+
 ```bash
 $ echo "blabla" > example/my_encrypted_file.txt
 
@@ -70,6 +73,8 @@ $ ctmg close example
 ```
 
 #### Reopening the encrypted container
+
+The "example/" directory is re-created and re-mounted from "example.ct".
 
 ```bash
 $ ctmg open example
