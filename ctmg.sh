@@ -49,6 +49,19 @@ yesno() {
 	read -r -p "$1 [y/N] " response
 	[[ $response == [yY] ]] || exit 1
 }
+readarg_container() {
+	# container_dir  = /home/myuser/
+	container_dir="$(dirname $1)"
+	# container_path = /home/myuser/bla.ct
+	container_path="${container_dir}/$(basename $1 $CT_SUFFIX)${CT_SUFFIX}"
+	# mount_path     = /home/myuser/bla/
+	mount_path="${container_dir}/$(basename $container_path ${CT_SUFFIX})"
+	# mapper_name    = ct_bla
+	mapper_name="${CT_MAPPER_PREFIX}$(basename $mount_path)"
+	# mapper_path    = /dev/mapper/ct_bla
+	mapper_path="/dev/mapper/${mapper_name}"
+}
+
 
 #
 # COMMANDS
@@ -66,7 +79,7 @@ do_new() {
 }
 
 do_delete() {
-	rm -f $container_path
+	trace rm -f $container_path
 }
 
 do_open() {
@@ -94,42 +107,40 @@ do_close() {
 #
 
 PROGRAM="$(basename $0)"
-
-[[ $# -lt 2 ]] && fatal_usage
-cmd=$1
-container_dir="$(dirname $1)"						# /home/myuser/
-container_path="${container_dir}/$(basename $2 $CT_SUFFIX)${CT_SUFFIX}"	# /home/myuser/bla.ct
-mount_path="${container_dir}/$(basename $container_path ${CT_SUFFIX})"	# /home/myuser/bla/
-mapper_name="${CT_MAPPER_PREFIX}$(basename $mount_path)"		# ct_bla
-mapper_path="/dev/mapper/${mapper_name}"				# /dev/mapper/ct_bla
-
 set -e
 
-case $cmd in
+case $1 in
 n|new)
 	[[ $# -ne 3 ]] && fatal_usage
-	container_size="$3"
+	shift && readarg_container $1
+	container_size="$2"
 	do_new
 	echo "[*] Created $container_path of size ${container_size}MB"
 	echo "[*] Open and mounted"
 	break;;
 d|del|delete)
 	[[ $# -ne 2 ]] && fatal_usage
-
+	shift && readarg_container $1
 	yesno "Are you sure you would like to delete $container_path?"
 	do_close && true
 	do_delete
 	echo "[*] Deleted $container_path"
 	break;;
-o|open)
-	[[ $# -ne 2 ]] && fatal_usage
-	do_open 1
-	echo "[*] Opened and mounted $mount_path"
-	break;;
 c|close)
 	[[ $# -ne 2 ]] && fatal_usage
+	shift && readarg_container $1
 	do_close
 	echo "[*] Closed and unmounted $mount_path"
+	break;;
+help|-h)
+	usage
+	break;;
+*)
+	[[ $# -lt 1 ]] && fatal_usage
+	[[ $1 == "open" || $1 == "o" ]] && shift
+	readarg_container $1
+	do_open 1
+	echo "[*] Opened and mounted $mount_path"
 	break;;
 esac
 exit 0
