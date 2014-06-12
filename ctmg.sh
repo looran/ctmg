@@ -24,6 +24,7 @@ usage() {
 	    $PROGRAM delete container_path
 	    $PROGRAM open   container_path
 	    $PROGRAM close  container_path
+	    $PROGRAM list
 	_EOF
 }
 
@@ -102,6 +103,10 @@ do_close() {
 	trace sudo cryptsetup luksClose $mapper_name
 }
 
+do_list() {
+	lsblk -l |grep $CT_MAPPER_PREFIX
+}
+
 #
 # MAIN
 #
@@ -131,6 +136,10 @@ c|close)
 	shift && readarg_container $1
 	do_close
 	echo "[*] Closed and unmounted $mount_path"
+	break;;
+l|list)
+	[[ $# -ne 1 ]] && fatal_usage
+	do_list
 	break;;
 help|-h)
 	usage
