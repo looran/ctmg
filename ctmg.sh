@@ -88,7 +88,8 @@ do_open() {
 	if [ -e $mapper_path ]; then
 		echo "Mapper file $mapper_path already exists, not reopening"
 	else
-		trace sudo cryptsetup luksOpen $container_path $mapper_name
+		trace losetup_path=$(sudo losetup --show -f $container_path)
+		trace sudo cryptsetup luksOpen $losetup_path $mapper_name
 	fi
 	if [ $do_mount -eq 1 ]; then
 		trace mkdir -p $mount_path
@@ -101,6 +102,8 @@ do_close() {
 	trace sudo umount $mount_path && true
 	trace rmdir $mount_path && true
 	trace sudo cryptsetup luksClose $mapper_name
+	trace losetup_path=$(sudo losetup -l | grep "$container_path" | awk '{print $1}')
+	trace sudo losetup -d $losetup_path
 }
 
 do_list() {
