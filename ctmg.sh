@@ -94,7 +94,7 @@ do_open() {
 	if [[ $do_mount -eq 1 ]]; then
 		trace mkdir -p "$mount_path"
 		trace sudo mount "/dev/mapper/${mapper_name}" "$mount_path"
-		trace sudo chown "$(id -u):$(id -g)" "$mount_path" # XXX optional
+		trace sudo chown -R "$(id -u):$(id -g)" "$mount_path" # XXX optional
 	fi
 }
 
