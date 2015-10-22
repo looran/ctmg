@@ -99,8 +99,8 @@ do_open() {
 }
 
 do_close() {
-	trace sudo umount "$mount_path" && true
-	trace rmdir "$mount_path" && true
+	trace sudo umount "$mount_path" || true
+	trace rmdir "$mount_path" || true
 	trace sudo cryptsetup luksClose $mapper_name
 	trace losetup_path=$(sudo losetup -l | grep "$container_path" | awk '{print $1}')
 	trace sudo losetup -d "$losetup_path"
@@ -130,7 +130,7 @@ d|del|delete)
 	[[ $# -ne 2 ]] && fatal_usage
 	shift && readarg_container "$1"
 	yesno "Are you sure you would like to delete $container_path?"
-	do_close && true
+	do_close || true
 	do_delete
 	echo "[*] Deleted $container_path"
 	break;;
