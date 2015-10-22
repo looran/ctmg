@@ -69,7 +69,7 @@ readarg_container() {
 #
 
 do_new() {
-	trace dd if=/dev/zero of=$container_path bs=1M count=$container_size
+	trace fallocate -l "${container_size}MiB" "$container_path"
 	trace sudo cryptsetup --cipher aes-xts-plain64 \
 		--key-size 512 --hash sha512 --iter-time 5000 \
 		--use-random --verify-passphrase \
