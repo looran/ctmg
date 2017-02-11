@@ -1,6 +1,8 @@
 ctmg
 ====
 
+# DEPRECATED, moved to https://git.zx2c4.com/ctmg/
+
 Encrypted container manager, wrapper around cryptsetup on loopback files
 
 ### Usage
